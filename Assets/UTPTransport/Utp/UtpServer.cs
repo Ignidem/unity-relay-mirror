@@ -297,6 +297,10 @@ namespace Utp
 			NetworkEndPoint endpoint = NetworkEndPoint.AnyIpv4;
 			endpoint.Port = port;
 
+			//Initialize connections list & event queue
+			connections = new NativeList<Unity.Networking.Transport.NetworkConnection>(16, Allocator.Persistent);
+			connectionsEventsQueue = new NativeQueue<UtpConnectionEvent>(Allocator.Persistent);
+
 			if (useRelay)
 			{
 				//Instantiate relay network data
@@ -307,26 +311,16 @@ namespace Utp
 				//Initialize relay network
 				RelayParameterExtensions.WithRelayParameters(ref networkSettings, ref relayServerData);
 
-				//Instantiate network driver
-				driver = NetworkDriver.Create(networkSettings);
+				CreateDriver(networkSettings);
 			}
 			else
 			{
 				//Initialize network settings
 				NetworkSettings networkSettings = new NetworkSettings();
 
-				//Instantiate network driver
-				driver = NetworkDriver.Create(networkSettings);
+				CreateDriver(networkSettings);
 				endpoint.Port = port;
 			}
-
-			//Initialize connections list & event queue
-			connections = new NativeList<Unity.Networking.Transport.NetworkConnection>(16, Allocator.Persistent);
-			connectionsEventsQueue = new NativeQueue<UtpConnectionEvent>(Allocator.Persistent);
-
-			//Create network pipelines
-			reliablePipeline = driver.CreatePipeline(typeof(ReliableSequencedPipelineStage));
-			unreliablePipeline = driver.CreatePipeline(typeof(UnreliableSequencedPipelineStage));
 
 			int bindReturnCode = driver.Bind(endpoint);
 			if (!driver.Bound)
@@ -411,10 +405,7 @@ namespace Utp
 
 			//Dispose of driver
 			if (driver.IsCreated)
-			{
-				driver.Dispose();
-				driver = default(NetworkDriver);
-			}
+				DisposeDriver();
 		}
 
 		/// <summary>

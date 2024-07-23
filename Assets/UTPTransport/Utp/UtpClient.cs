@@ -266,12 +266,10 @@ namespace Utp
 
 			connectionsEventsQueue = new NativeQueue<UtpConnectionEvent>(Allocator.Persistent);
 
-			var settings = new NetworkSettings();
-			settings.WithNetworkConfigParameters(disconnectTimeoutMS: timeoutInMilliseconds);
+			var networkSettings = new NetworkSettings();
+			networkSettings.WithNetworkConfigParameters(disconnectTimeoutMS: timeoutInMilliseconds);
 
-			driver = NetworkDriver.Create(settings);
-			reliablePipeline = driver.CreatePipeline(typeof(ReliableSequencedPipelineStage));
-			unreliablePipeline = driver.CreatePipeline(typeof(UnreliableSequencedPipelineStage));
+			CreateDriver(networkSettings);
 
 			connection = driver.Connect(endpoint);
 
@@ -304,10 +302,7 @@ namespace Utp
 			var networkSettings = new NetworkSettings();
 			networkSettings.WithRelayParameters(ref relayServerData);
 
-			driver = NetworkDriver.Create(networkSettings);
-			reliablePipeline = driver.CreatePipeline(typeof(ReliableSequencedPipelineStage));
-			unreliablePipeline = driver.CreatePipeline(typeof(UnreliableSequencedPipelineStage));
-
+			CreateDriver(networkSettings);
 			connection = driver.Connect(relayServerData.Endpoint);
 
 			if (IsValidConnection(connection))
@@ -352,10 +347,7 @@ namespace Utp
 
 			//Dispose of existing network driver
 			if (driver.IsCreated)
-			{
-				driver.Dispose();
-				driver = default(NetworkDriver);
-			}
+				DisposeDriver();
 		}
 
 		/// <summary>

@@ -17,7 +17,7 @@ namespace Utp
         /// <summary>
         /// Used alongside a connection to connect, send, and receive data from a listen server.
         /// </summary>
-        protected NetworkDriver driver;
+        protected NetworkDriver driver { get; private set; }
 
         /// <summary>
 		/// A pipeline on the driver that is sequenced, and ensures messages are delivered.
@@ -38,6 +38,20 @@ namespace Utp
         /// Timeout(ms) to be set on drivers.
         /// </summary>
         protected int timeoutInMilliseconds;
+
+		protected void CreateDriver(NetworkSettings settings)
+		{
+
+			driver = NetworkDriver.Create(settings);
+			reliablePipeline = driver.CreatePipeline(typeof(ReliableSequencedPipelineStage));
+			unreliablePipeline = driver.CreatePipeline(typeof(UnreliableSequencedPipelineStage));
+		}
+
+		protected void DisposeDriver()
+		{
+			driver.Dispose();
+			driver = default;
+		}
 
         /// <summary>
         /// Returns whether a connection is a valid one. Checks against default connection object.
