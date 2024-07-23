@@ -45,7 +45,6 @@ namespace Utp
 			// The host passes its connectionData twice into this function
 			var relayServerData = new RelayServerData(ref serverEndpoint, 0, ref allocationIdBytes, ref connectionData,
 				ref connectionData, ref key, connectionTypeString == "dtls");
-			relayServerData.ComputeNewNonce();
 
 			return relayServerData;
 		}
@@ -87,7 +86,6 @@ namespace Utp
 			// A player joining the host passes its own connectionData as well as the host's
 			var relayServerData = new RelayServerData(ref serverEndpoint, 0, ref allocationIdBytes, ref connectionData,
 				ref hostConnectionData, ref key, connectionTypeString == "dtls");
-			relayServerData.ComputeNewNonce();
 
 			return relayServerData;
 		}
