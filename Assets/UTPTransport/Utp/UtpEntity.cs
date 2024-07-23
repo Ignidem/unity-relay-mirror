@@ -1,6 +1,7 @@
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Networking.Transport;
+using Unity.Networking.Transport.Utilities;
 
 namespace Utp
 {
@@ -41,9 +42,9 @@ namespace Utp
 
 		protected void CreateDriver(NetworkSettings settings)
 		{
-
+			settings.WithFragmentationStageParameters(payloadCapacity: 10000);
 			driver = NetworkDriver.Create(settings);
-			reliablePipeline = driver.CreatePipeline(typeof(ReliableSequencedPipelineStage));
+			reliablePipeline = driver.CreatePipeline(typeof(FragmentationPipelineStage), typeof(ReliableSequencedPipelineStage));
 			unreliablePipeline = driver.CreatePipeline(typeof(UnreliableSequencedPipelineStage));
 		}
 
