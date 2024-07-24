@@ -322,15 +322,15 @@ namespace Utp
 				endpoint.Port = port;
 			}
 
-			int bindReturnCode = driver.Bind(endpoint);
-			if (!driver.Bound)
+			int bindReturnCode = Driver.Bind(endpoint);
+			if (!Driver.Bound)
 			{
 				UtpLog.Error($"Unable to start server, failed to bind the specified port {endpoint.Port}. {nameof(NetworkDriver.Bind)}() returned {bindReturnCode}.");
 				return;
 			}
 
-			int listenReturnCode = driver.Listen();
-			if (!driver.Listening)
+			int listenReturnCode = Driver.Listen();
+			if (!Driver.Listening)
 			{
 				UtpLog.Error($"Unable to start server, failed to listen. {nameof(NetworkDriver.Listen)} returned {listenReturnCode}.");
 				return;
@@ -362,20 +362,20 @@ namespace Utp
 			// Create a new jobs
 			var serverUpdateJob = new ServerUpdateJob
 			{
-				driver = driver.ToConcurrent(),
+				driver = Driver.ToConcurrent(),
 				connections = connections.AsDeferredJobArray(),
 				connectionsEventsQueue = connectionsEventsQueue.AsParallelWriter()
 			};
 
 			var connectionJob = new ServerUpdateConnectionsJob
 			{
-				driver = driver,
+				driver = Driver,
 				connections = connections,
 				connectionsEventsQueue = connectionsEventsQueue.AsParallelWriter()
 			};
 
 			// Schedule jobs
-			jobHandle = driver.ScheduleUpdate();
+			jobHandle = Driver.ScheduleUpdate();
 
 			// We are explicitly scheduling ServerUpdateJob before ServerUpdateConnectionsJob so that disconnect events are enqueued before the corresponding NetworkConnection is removed
 			jobHandle = serverUpdateJob.Schedule(connections, 1, jobHandle);
@@ -404,7 +404,7 @@ namespace Utp
 			}
 
 			//Dispose of driver
-			if (driver.IsCreated)
+			if (Driver.IsCreated)
 				DisposeDriver();
 		}
 
@@ -420,10 +420,10 @@ namespace Utp
 			if (TryGetConnection(connectionId, out Unity.Networking.Transport.NetworkConnection connection))
 			{
 				UtpLog.Info($"Disconnecting connection with ID: {connectionId}");
-				connection.Disconnect(driver);
+				connection.Disconnect(Driver);
 
 				// When disconnecting, we need to ensure the driver has the opportunity to send a disconnect event to the client
-				driver.ScheduleUpdate().Complete();
+				Driver.ScheduleUpdate().Complete();
 
 				//Invoke disconnect action
 				OnDisconnected?.Invoke(connectionId);
@@ -457,7 +457,7 @@ namespace Utp
 				// Create a new job
 				var job = new ClientSendJob
 				{
-					driver = driver,
+					driver = Driver,
 					pipeline = pipeline,
 					connection = connection,
 					data = segmentArray
@@ -478,7 +478,7 @@ namespace Utp
 			//If a connection was found, get its address
 			if (TryGetConnection(connectionId, out Unity.Networking.Transport.NetworkConnection connection))
 			{
-				NetworkEndPoint endpoint = driver.RemoteEndPoint(connection);
+				NetworkEndPoint endpoint = Driver.RemoteEndPoint(connection);
 				return endpoint.Address;
 			}
 			else
@@ -597,8 +597,8 @@ namespace Utp
 			//If driver is active, cache its max header size for UTP transport
 			if (isInitialized)
 			{
-				driverMaxHeaderSize[Channels.Reliable] = driver.MaxHeaderSize(reliablePipeline);
-				driverMaxHeaderSize[Channels.Unreliable] = driver.MaxHeaderSize(unreliablePipeline);
+				driverMaxHeaderSize[Channels.Reliable] = Driver.MaxHeaderSize(reliablePipeline);
+				driverMaxHeaderSize[Channels.Unreliable] = Driver.MaxHeaderSize(unreliablePipeline);
 			}
 
 		}

@@ -31,48 +31,29 @@ namespace Utp
 		/// </summary>
 		public IRelayServiceSDK RelayServiceSDK { get; set; } = new WrappedRelayServiceSDK();
 
-		private void Awake()
-		{
-			UtpLog.Info("RelayManager initialized");
-		}
-
 		/// <summary>
 		/// Retrieve the <seealso cref="Unity.Services.Relay.Models.JoinAllocation"/> corresponding to the specified join code.
 		/// </summary>
 		/// <param name="joinCode">The join code that will be used to retrieve the JoinAllocation.</param>
 		/// <param name="onSuccess">A callback to invoke when the Relay allocation is successfully retrieved from the join code.</param>
 		/// <param name="onFailure">A callback to invoke when the Relay allocation is unsuccessfully retrieved from the join code.</param>
-		public void GetAllocationFromJoinCode(string joinCode, Action onSuccess, Action onFailure)
+		public async void GetAllocationFromJoinCode(string joinCode, Action onSuccess, Action onFailure)
 		{
-			StartCoroutine(GetAllocationFromJoinCodeTask(joinCode, onSuccess, onFailure));
+			try
+			{
+				await JoinFromCode(joinCode);
+				onSuccess();
+			}
+			catch (Exception e)
+			{
+				UtpLog.Error($"Unable to get Relay allocation from join code, encountered an error: {e.Message}.");
+				onFailure();
+			}
 		}
 
-		private IEnumerator GetAllocationFromJoinCodeTask(string joinCode, Action onSuccess, Action onFailure)
+		public async Task JoinFromCode(string joinCode)
 		{
-			Task<JoinAllocation> joinAllocation = RelayServiceSDK.JoinAllocationAsync(joinCode);
-
-			while (!joinAllocation.IsCompleted)
-			{
-				yield return null;
-			}
-
-			if (joinAllocation.IsFaulted)
-			{
-				joinAllocation.Exception.Flatten().Handle((Exception err) =>
-				{
-					UtpLog.Error($"Unable to get Relay allocation from join code, encountered an error: {err.Message}.");
-
-					return true;
-				});
-
-				onFailure?.Invoke();
-
-				yield break;
-			}
-
-			JoinAllocation = joinAllocation.Result;
-
-			onSuccess?.Invoke();
+			JoinAllocation = await RelayServiceSDK.JoinAllocationAsync(joinCode);
 		}
 
 		/// <summary>

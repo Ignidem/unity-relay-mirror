@@ -129,6 +129,8 @@ namespace UI
 					GUILayout.BeginHorizontal();
 					if (GUILayout.Button("Client (with Relay)"))
 					{
+						if (string.IsNullOrEmpty(m_Manager.relayJoinCode))
+							m_Manager.relayJoinCode = GUIUtility.systemCopyBuffer;
 						m_Manager.JoinRelayServer();
 					}
 					m_Manager.relayJoinCode = GUILayout.TextField(m_Manager.relayJoinCode);
@@ -186,7 +188,13 @@ namespace UI
 				GUILayout.Label("Server: active. Transport: " + Transport.activeTransport);
 				if (m_Manager.IsRelayEnabled())
 				{
-					GUILayout.Label("Relay enabled. Join code: " + m_Manager.relayJoinCode);
+					GUILayout.BeginHorizontal();
+					GUILayout.Label("Relay enabled. Join code: ");
+					string code = m_Manager.relayJoinCode;
+					if (GUILayout.Button(code))
+						GUIUtility.systemCopyBuffer = code;
+
+					GUILayout.EndHorizontal();
 				}
 			}
 			if (NetworkClient.isConnected)

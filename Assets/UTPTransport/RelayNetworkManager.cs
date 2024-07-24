@@ -10,40 +10,12 @@ namespace Utp
 {
 	public class RelayNetworkManager : NetworkManager
 	{
-		private UtpTransport utpTransport;
+		private UtpTransport utpTransport => transport as UtpTransport;
 
 		/// <summary>
 		/// Server's join code if using Relay.
 		/// </summary>
 		public string relayJoinCode = "";
-
-		public override void Awake()
-		{
-			base.Awake();
-
-			utpTransport = GetComponent<UtpTransport>();
-
-			string[] args = System.Environment.GetCommandLineArgs();
-			for (int key = 0; key < args.Length; key++)
-			{
-				if (args[key] == "-port")
-				{
-					if (key + 1 < args.Length)
-					{
-						string value = args[key + 1];
-
-						try
-						{
-							utpTransport.Port = ushort.Parse(value);
-						}
-						catch
-						{
-							UtpLog.Warning($"Unable to parse {value} into transport Port");
-						}
-					}
-				}
-			}
-		}
 
 		/// <summary>
 		/// Get the port the server is listening on.
@@ -99,8 +71,7 @@ namespace Utp
 			utpTransport.AllocateRelayServer(maxPlayers, regionId,
 			(string joinCode) =>
 			{
-				relayJoinCode = joinCode;
-
+				GUIUtility.systemCopyBuffer = relayJoinCode = joinCode;
 				StartHost();
 			},
 			() =>

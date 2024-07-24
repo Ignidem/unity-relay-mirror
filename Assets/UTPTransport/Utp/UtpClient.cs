@@ -271,7 +271,7 @@ namespace Utp
 
 			CreateDriver(networkSettings);
 
-			connection = driver.Connect(endpoint);
+			connection = Driver.Connect(endpoint);
 
 			if (IsValidConnection(connection))
 			{
@@ -303,7 +303,7 @@ namespace Utp
 			networkSettings.WithRelayParameters(ref relayServerData);
 
 			CreateDriver(networkSettings);
-			connection = driver.Connect(relayServerData.Endpoint);
+			connection = Driver.Connect(relayServerData.Endpoint);
 
 			if (IsValidConnection(connection))
 			{
@@ -328,11 +328,11 @@ namespace Utp
 				UtpLog.Info("Client disconnecting from server");
 
 				//Disconnect from server
-				connection.Disconnect(driver);
+				connection.Disconnect(Driver);
 				connection = default(Unity.Networking.Transport.NetworkConnection);
 
 				//We need to ensure the driver has the opportunity to send a disconnect event to the server
-				driver.ScheduleUpdate().Complete();
+				Driver.ScheduleUpdate().Complete();
 
 				//Invoke disconnect action
 				OnDisconnected?.Invoke();
@@ -346,7 +346,7 @@ namespace Utp
 			}
 
 			//Dispose of existing network driver
-			if (driver.IsCreated)
+			if (Driver.IsCreated)
 				DisposeDriver();
 		}
 
@@ -374,13 +374,13 @@ namespace Utp
 			// Create a new job
 			var job = new ClientUpdateJob
 			{
-				driver = driver,
+				driver = Driver,
 				connection = connection,
 				connectionEventsQueue = connectionsEventsQueue.AsParallelWriter()
 			};
 
 			// Schedule job
-			jobHandle = driver.ScheduleUpdate();
+			jobHandle = Driver.ScheduleUpdate();
 			jobHandle = job.Schedule(jobHandle);
 		}
 
@@ -401,7 +401,7 @@ namespace Utp
 			// Create a new job
 			var job = new ClientSendJob
 			{
-				driver = driver,
+				driver = Driver,
 				pipeline = pipeline,
 				connection = connection,
 				data = segmentArray
@@ -496,12 +496,12 @@ namespace Utp
 				//If driver is active, cache its max header size for UTP transport
 				if (isInitialized)
 				{
-					driverMaxHeaderSize[Channels.Reliable] = driver.MaxHeaderSize(reliablePipeline);
-					driverMaxHeaderSize[Channels.Unreliable] = driver.MaxHeaderSize(unreliablePipeline);
+					driverMaxHeaderSize[Channels.Reliable] = Driver.MaxHeaderSize(reliablePipeline);
+					driverMaxHeaderSize[Channels.Unreliable] = Driver.MaxHeaderSize(unreliablePipeline);
 				}
 
 				//Set connection state
-				isConnected = isInitialized && connection.GetState(driver) == Unity.Networking.Transport.NetworkConnection.State.Connected;
+				isConnected = isInitialized && connection.GetState(Driver) == Unity.Networking.Transport.NetworkConnection.State.Connected;
 			}
 			else
 			{

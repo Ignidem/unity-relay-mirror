@@ -18,7 +18,7 @@ namespace Utp
         /// <summary>
         /// Used alongside a connection to connect, send, and receive data from a listen server.
         /// </summary>
-        protected NetworkDriver driver { get; private set; }
+        protected NetworkDriver Driver { get; private set; }
 
         /// <summary>
 		/// A pipeline on the driver that is sequenced, and ensures messages are delivered.
@@ -43,15 +43,15 @@ namespace Utp
 		protected void CreateDriver(NetworkSettings settings)
 		{
 			settings.WithFragmentationStageParameters(payloadCapacity: 10000);
-			driver = NetworkDriver.Create(settings);
-			reliablePipeline = driver.CreatePipeline(typeof(FragmentationPipelineStage), typeof(ReliableSequencedPipelineStage));
-			unreliablePipeline = driver.CreatePipeline(typeof(UnreliableSequencedPipelineStage));
+			Driver = NetworkDriver.Create(settings);
+			reliablePipeline = Driver.CreatePipeline(typeof(FragmentationPipelineStage), typeof(ReliableSequencedPipelineStage));
+			unreliablePipeline = Driver.CreatePipeline(typeof(UnreliableSequencedPipelineStage));
 		}
 
 		protected void DisposeDriver()
 		{
-			driver.Dispose();
-			driver = default;
+			Driver.Dispose();
+			Driver = default;
 		}
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace Utp
 		/// <returns>True if initialized, false otherwise.</returns>
 		public bool IsNetworkDriverInitialized()
         {
-            return driver.IsCreated;
+            return Driver.IsCreated;
         }
     }
 }
