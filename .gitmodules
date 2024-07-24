@@ -1,0 +1,3 @@
+[submodule "Assets/unity_utc"]
+	path = Assets/unity_utc
+	url = https://github.com/Ignidem/unity_utc

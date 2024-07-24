@@ -112,7 +112,7 @@ namespace UI
 						if (GUILayout.Button("Relay Host (Server + Client)"))
 						{
 							int maxPlayers = 8;
-							m_Manager.StartRelayHost(maxPlayers);
+							_ = m_Manager.StartRelayHost(maxPlayers);
 						}
 					}
 
@@ -129,11 +129,12 @@ namespace UI
 					GUILayout.BeginHorizontal();
 					if (GUILayout.Button("Client (with Relay)"))
 					{
-						if (string.IsNullOrEmpty(m_Manager.relayJoinCode))
-							m_Manager.relayJoinCode = GUIUtility.systemCopyBuffer;
-						m_Manager.JoinRelayServer();
+						string code = m_Manager.RelayJoinCode;
+						if (string.IsNullOrEmpty(code))
+							code = m_Manager.inputJoinCode = GUIUtility.systemCopyBuffer;
+						m_Manager.JoinRelayServer(code);
 					}
-					m_Manager.relayJoinCode = GUILayout.TextField(m_Manager.relayJoinCode);
+					m_Manager.inputJoinCode = GUILayout.TextField(m_Manager.inputJoinCode);
 					GUILayout.EndHorizontal();
 
 					if (GUILayout.Button("Get Relay Regions"))
@@ -190,7 +191,7 @@ namespace UI
 				{
 					GUILayout.BeginHorizontal();
 					GUILayout.Label("Relay enabled. Join code: ");
-					string code = m_Manager.relayJoinCode;
+					string code = m_Manager.RelayJoinCode;
 					if (GUILayout.Button(code))
 						GUIUtility.systemCopyBuffer = code;
 

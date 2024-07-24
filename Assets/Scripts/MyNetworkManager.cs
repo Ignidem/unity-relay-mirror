@@ -6,6 +6,7 @@ using Unity.Services.Authentication;
 using Unity.Services.Core;
 
 using Utp;
+using System.Threading.Tasks;
 
 namespace Network 
 {
@@ -15,7 +16,17 @@ namespace Network
         /// The local player object that spawns in.
         /// </summary>
         public Player localPlayer;
-        private string m_SessionId = "";
+
+		public string inputJoinCode;
+		public string RelayJoinCode
+		{
+			get
+			{
+				return !string.IsNullOrEmpty(inputJoinCode) ? inputJoinCode : UtpTransport.RelayManager.JoinCode;
+			}
+		}
+
+		private string m_SessionId = "";
         private string m_Username;
         private string m_UserId;
 
@@ -70,7 +81,22 @@ namespace Network
         }
 
 
-        public override void OnStartServer()
+		public override async Task<string> StartRelayHost(int maxPlayers, string regionId = null)
+		{
+			try
+			{
+				string code = await base.StartRelayHost(maxPlayers, regionId);
+				GUIUtility.systemCopyBuffer = code;
+				return code;
+			}
+			catch (Exception e)
+			{
+				UtpLog.Error(e.Message);
+				throw e;
+			}
+		}
+
+		public override void OnStartServer()
         {
             Debug.Log("MyNetworkManager: Server Started!");
 
